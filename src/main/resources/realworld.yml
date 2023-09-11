@@ -108,6 +108,28 @@ paths:
               schema:
                 type: string
       x-codegen-request-body-name: body
+  /profiles/{username}:
+    get:
+      tags:
+      - Profile
+      summary: Get a profile
+      description: Get a profile of a user of the system. Auth is optional
+      operationId: GetProfileByUsername
+      parameters:
+      - name: username
+        in: path
+        description: Username of the profile to get
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+          required: true
 components:
   schemas:
     LoginUser:
@@ -147,6 +169,29 @@ components:
       properties:
         user:
           $ref: '#/components/schemas/NewUser'
+    Profile:
+      required:
+      - username
+      - bio
+      - image
+      - following
+      type: object
+      properties:
+        username:
+          type: string
+        bio:
+          type: string
+        image:
+          type: string
+        following:
+          type: boolean
+    ProfileResponse:
+      required:
+      - profile
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/Profile'
     UpdateUserRequest:
       required:
       - user

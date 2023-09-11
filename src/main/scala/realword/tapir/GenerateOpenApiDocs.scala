@@ -1,6 +1,7 @@
 package realword.tapir
 
-import realword.tapir.userauthentication.UserAndAuthentication
+import realword.tapir.profile.ProfileEndpoints
+import realword.tapir.userauthentication.UserAndAuthenticationEndpoints
 import sttp.apispec.openapi.circe.yaml.*
 import sttp.apispec.openapi.{Contact, Info, License, OpenAPI}
 import sttp.tapir.*
@@ -11,10 +12,15 @@ import java.nio.file.{Files, Paths}
 object GenerateOpenApiDocs:
 
   @main def generate(): Unit =
-    val options = OpenAPIDocsOptions(UserAndAuthentication.operationIdGenerator.lift(_, _, _).getOrElse("?"))
+    val options = OpenAPIDocsOptions(
+      UserAndAuthenticationEndpoints.operationIdGenerator
+        .orElse(ProfileEndpoints.operationIdGenerator)
+        .lift(_, _, _)
+        .getOrElse("?")
+    )
     val docs: OpenAPI = OpenAPIDocsInterpreter(options)
       .toOpenAPI(
-        UserAndAuthentication.endpoints,
+        UserAndAuthenticationEndpoints.endpoints.concat(ProfileEndpoints.endpoints),
         Info(
           "RealWorld Conduit API",
           "1.0.0",

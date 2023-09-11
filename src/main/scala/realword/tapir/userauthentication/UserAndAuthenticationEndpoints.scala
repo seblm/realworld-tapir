@@ -8,7 +8,7 @@ import sttp.tapir.docs.apispec.DocsExtensionAttribute.*
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.circe.*
 
-object UserAndAuthentication:
+object UserAndAuthenticationEndpoints:
   private val tag = "User and Authentication"
   private val loginUserRequest =
     jsonBody[LoginUserRequest].description("Credentials to use").docsExtension("required", true)
