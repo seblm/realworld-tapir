@@ -173,8 +173,250 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProfileResponse'
           required: true
+  /articles/feed:
+    get:
+      tags:
+      - Articles
+      summary: Get recent articles from users you follow
+      description: Get most recent articles from users you follow. Use query parameters
+        to limit. Auth is required
+      operationId: GetArticlesFeed
+      parameters:
+      - name: offset
+        in: query
+        description: The number of items to skip before starting to collect the result
+          set.
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+      - name: limit
+        in: query
+        description: The numbers of items to return.
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+      responses:
+        '200':
+          description: Multiple articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultipleArticlesResponse'
+        '400':
+          description: 'Invalid value for: query parameter offset, Invalid value for:
+            query parameter limit'
+          content:
+            text/plain:
+              schema:
+                type: string
+  /articles:
+    get:
+      tags:
+      - Articles
+      summary: Get recent articles globally
+      description: Get most recent articles globally. Use query parameters to filter
+        results. Auth is optional
+      operationId: GetArticles
+      parameters:
+      - name: tag
+        in: query
+        description: Filter by tag
+        required: false
+        schema:
+          type: string
+      - name: author
+        in: query
+        description: Filter by author (username)
+        required: false
+        schema:
+          type: string
+      - name: favorited
+        in: query
+        description: Filter by favorites of a user (username)
+        required: false
+        schema:
+          type: string
+      - name: offset
+        in: query
+        description: The number of items to skip before starting to collect the result
+          set.
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+      - name: limit
+        in: query
+        description: The numbers of items to return.
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+      responses:
+        '200':
+          description: Multiple articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultipleArticlesResponse'
+        '400':
+          description: 'Invalid value for: query parameter tag, Invalid value for:
+            query parameter author, Invalid value for: query parameter favorited,
+            Invalid value for: query parameter offset, Invalid value for: query parameter
+            limit'
+          content:
+            text/plain:
+              schema:
+                type: string
+    post:
+      tags:
+      - Articles
+      summary: Create an article
+      description: Create an article. Auth is required
+      operationId: CreateArticle
+      requestBody:
+        description: Article to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewArticleRequest'
+        required: true
+        x-codegen-request-body-name: body
+      responses:
+        '200':
+          description: Single article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleArticleResponse'
+        '400':
+          description: 'Invalid value for: body'
+          content:
+            text/plain:
+              schema:
+                type: string
+  /articles/{slug}:
+    get:
+      tags:
+      - Articles
+      summary: Get an article
+      description: Get an article. Auth not required
+      operationId: GetArticle
+      parameters:
+      - name: slug
+        in: path
+        description: Slug of the article to get
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Single article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleArticleResponse'
+    put:
+      tags:
+      - Articles
+      summary: Update an article
+      description: Update an article. Auth is required
+      operationId: UpdateArticle
+      parameters:
+      - name: slug
+        in: path
+        description: Slug of the article to update
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Article to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateArticleRequest'
+        required: true
+      responses:
+        '200':
+          description: Single article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleArticleResponse'
+        '400':
+          description: 'Invalid value for: body'
+          content:
+            text/plain:
+              schema:
+                type: string
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - Articles
+      summary: Delete an article
+      description: Delete an article. Auth is required
+      operationId: DeleteArticle
+      parameters:
+      - name: slug
+        in: path
+        description: Slug of the article to delete
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: No content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyOkResponse'
 components:
   schemas:
+    Article:
+      required:
+      - slug
+      - title
+      - description
+      - body
+      - createdAt
+      - updatedAt
+      - favorited
+      - favoritesCount
+      - author
+      type: object
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+        tagList:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        favorited:
+          type: boolean
+        favoritesCount:
+          type: integer
+          format: int32
+        author:
+          $ref: '#/components/schemas/Profile'
+    EmptyOkResponse:
+      type: object
     LoginUser:
       required:
       - email
@@ -192,6 +434,43 @@ components:
       properties:
         user:
           $ref: '#/components/schemas/LoginUser'
+    MultipleArticlesResponse:
+      required:
+      - articles
+      - articlesCount
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+        articlesCount:
+          type: integer
+          format: int32
+    NewArticle:
+      required:
+      - title
+      - description
+      - body
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+        tagList:
+          type: array
+          items:
+            type: string
+    NewArticleRequest:
+      required:
+      - article
+      type: object
+      properties:
+        article:
+          $ref: '#/components/schemas/NewArticle'
     NewUser:
       required:
       - username
@@ -235,6 +514,29 @@ components:
       properties:
         profile:
           $ref: '#/components/schemas/Profile'
+    SingleArticleResponse:
+      required:
+      - article
+      type: object
+      properties:
+        article:
+          $ref: '#/components/schemas/Article'
+    UpdateArticle:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+    UpdateArticleRequest:
+      required:
+      - article
+      type: object
+      properties:
+        article:
+          $ref: '#/components/schemas/UpdateArticle'
     UpdateUserRequest:
       required:
       - user
